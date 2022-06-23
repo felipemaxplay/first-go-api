@@ -1,6 +1,8 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 var (
 	cfg *config
@@ -23,7 +25,7 @@ func init() {
 	viper.SetDefault("server.port", "8080")
 }
 
-func Load() error {
+func LoadConfig() error {
 	viper.SetConfigName("properties")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./resources/")
