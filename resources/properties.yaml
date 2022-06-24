@@ -1,0 +1,6 @@
+datasource:
+  url: postgres://admin:admin@localhost/players?sslmode=disable
+
+server:
+  host: localhost
+  port: 8888
