@@ -18,12 +18,12 @@ var (
 	playerRepo    repository.PlayerRepository = repository.NewPlayerRepository(db)
 	playerService service.PlayerService       = service.NewPlayerService(playerRepo)
 	controller    http.PlayerController       = http.NewPlayerController(playerService)
-	se            server.Server               = server.NewServer(controller)
+	sv            server.Server               = server.NewServer(controller)
 )
 
 func main() {
 	if errConfig != nil {
 		log.Println(errConfig)
 	}
-	se.Run()
+	sv.Run()
 }
