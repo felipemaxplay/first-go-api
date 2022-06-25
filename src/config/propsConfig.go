@@ -14,14 +14,16 @@ type config struct {
 }
 
 type ServerConfig struct {
-	Port string `json:"port"`
+	Host string
+	Port string
 }
 
 type DataSourceConfig struct {
-	URL string `json:"url"`
+	URL string
 }
 
 func init() {
+	viper.SetDefault("server.host", "localhost")
 	viper.SetDefault("server.port", "8080")
 }
 
@@ -39,6 +41,7 @@ func LoadConfig() error {
 	cfg = new(config)
 
 	cfg.Server = ServerConfig{
+		Host: viper.GetString("server.host"),
 		Port: viper.GetString("server.port"),
 	}
 
