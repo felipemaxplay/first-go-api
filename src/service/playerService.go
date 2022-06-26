@@ -7,9 +7,9 @@ import (
 )
 
 type PlayerService interface {
-	CreatePlayer(playerDto request.PlayerRequestDto) model.Player
-	GetPlayer(username string) model.Player
-	GetAllPlayers() []model.Player
+	CreatePlayer(playerDto request.PlayerRequestDto) (*model.Player, error)
+	GetPlayer(username string) (*model.Player, error)
+	GetAllPlayers() (*[]model.Player, error)
 }
 
 type playerService struct {
@@ -22,19 +22,32 @@ func NewPlayerService(playerRepo repository.PlayerRepository) PlayerService {
 	}
 }
 
-func (p *playerService) CreatePlayer(playerDto request.PlayerRequestDto) model.Player {
+func (p *playerService) CreatePlayer(playerDto request.PlayerRequestDto) (*model.Player, error) {
 	player := model.Player{
 		Name:     playerDto.Name,
 		Username: playerDto.Username,
 	}
-	res := p.playerRepository.CreatePlayer(player)
-	return res
+	res, err := p.playerRepository.CreatePlayer(player)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
-func (p *playerService) GetPlayer(username string) model.Player {
-	return p.playerRepository.GetPlayerByUsername(username)
+func (p *playerService) GetPlayer(username string) (*model.Player, error) {
+	player, err := p.playerRepository.GetPlayerByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return &player, nil
 }
 
-func (p *playerService) GetAllPlayers() []model.Player {
-	return p.playerRepository.GetAllPlayers()
+func (p *playerService) GetAllPlayers() (*[]model.Player, error) {
+	players, err := p.playerRepository.GetAllPlayers()
+	if err != nil {
+		return nil, err
+	}
+	return &players, nil
 }

@@ -1,12 +1,10 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/felipemaxplay/first-go-api/src/http/data/request"
 	"github.com/felipemaxplay/first-go-api/src/http/data/response"
-	"github.com/felipemaxplay/first-go-api/src/model"
 	"github.com/felipemaxplay/first-go-api/src/service"
 	"github.com/gin-gonic/gin"
 )
@@ -31,18 +29,23 @@ func NewPlayerController(service service.PlayerService) PlayerController {
 
 func (p *playerController) GetPlayerByUsername(ctx *gin.Context) {
 	username := ctx.Param("username")
-	fmt.Println(username)
-	var result model.Player = p.playerService.GetPlayer(username)
-	if (result == model.Player{}) {
-		res := response.BuildPlayerError(http.StatusBadRequest, "", "")
+	result, err := p.playerService.GetPlayer(username)
+	if err != nil {
+		res := response.BuildPlayerError(http.StatusNotFound, err.Error(), "Player not found.")
 		ctx.JSON(res.Code, res)
 		return
 	}
+
 	ctx.JSON(http.StatusOK, result)
 }
 
 func (p *playerController) GetAllPlayers(ctx *gin.Context) {
-	players := p.playerService.GetAllPlayers()
+	players, err := p.playerService.GetAllPlayers()
+	if err != nil {
+		res := response.BuildPlayerError(http.StatusBadRequest, err.Error(), "Failed to process request.")
+		ctx.JSON(res.Code, res)
+	}
+
 	ctx.JSON(http.StatusOK, players)
 }
 
@@ -54,7 +57,13 @@ func (p *playerController) CreatePlayer(ctx *gin.Context) {
 		ctx.JSON(res.Code, res)
 		return
 	}
-	result := p.playerService.CreatePlayer(playerDto)
+
+	result, err := p.playerService.CreatePlayer(playerDto)
+	if err != nil {
+		res := response.BuildPlayerError(http.StatusUnprocessableEntity, err.Error(), "Failed to processe request.")
+		ctx.JSON(res.Code, res)
+	}
+
 	ctx.JSON(http.StatusCreated, result)
 }
 

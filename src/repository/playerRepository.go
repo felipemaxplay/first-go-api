@@ -7,11 +7,11 @@ import (
 )
 
 type PlayerRepository interface {
-	GetPlayerByUsername(username string) model.Player
-	GetAllPlayers() []model.Player
-	CreatePlayer(player model.Player) model.Player
-	UpdatePlayer(username string) model.Player
-	DeletePlayer(username string)
+	GetPlayerByUsername(username string) (model.Player, error)
+	GetAllPlayers() ([]model.Player, error)
+	CreatePlayer(player model.Player) (model.Player, error)
+	UpdatePlayer(username string) (model.Player, error)
+	DeletePlayer(username string) error
 }
 
 type playerConnection struct {
@@ -24,33 +24,46 @@ func NewPlayerRepository(db *gorm.DB) PlayerRepository {
 	}
 }
 
-func (p *playerConnection) GetPlayerByUsername(username string) model.Player {
+func (p *playerConnection) GetPlayerByUsername(username string) (model.Player, error) {
 	var player model.Player
-	p.connection.Find(&player, "username = ?", username)
-	return player
+	res := p.connection.Take(&player, "username = ?", username)
+	if res.Error != nil {
+		return player, res.Error
+	}
+
+	return player, nil
 }
 
-func (p *playerConnection) GetAllPlayers() []model.Player {
+func (p *playerConnection) GetAllPlayers() ([]model.Player, error) {
 	var players []model.Player
 	p.connection.Find(&players)
-	return players
+	return players, nil
 }
 
-func (p *playerConnection) CreatePlayer(player model.Player) model.Player {
+func (p *playerConnection) CreatePlayer(player model.Player) (model.Player, error) {
 	player.ID = uuid.NewString()
 	p.connection.Save(&player)
-	return player
+	return player, nil
 }
 
-func (p *playerConnection) UpdatePlayer(username string) model.Player {
+func (p *playerConnection) UpdatePlayer(username string) (model.Player, error) {
 	var player model.Player
-	p.connection.Find(&player, "username = ?", username)
+	res := p.connection.Take(&player, "username = ?", username)
+	if res != nil {
+		return player, res.Error
+	}
+
 	p.connection.Save(&player)
-	return player
+	return player, nil
 }
 
-func (p *playerConnection) DeletePlayer(username string) {
+func (p *playerConnection) DeletePlayer(username string) error {
 	var player model.Player
-	p.connection.Find(&player, "username = ?", username)
+	res := p.connection.Take(&player, "username = ?", username)
+	if res != nil {
+		return res.Error
+	}
+
 	p.connection.Delete(&player)
+	return nil
 }
