@@ -10,7 +10,7 @@ type PlayerRepository interface {
 	GetPlayerByUsername(username string) (model.Player, error)
 	GetAllPlayers() ([]model.Player, error)
 	CreatePlayer(player model.Player) (model.Player, error)
-	UpdatePlayer(username string) (model.Player, error)
+	UpdatePlayer(player model.Player) (model.Player, error)
 	DeletePlayer(username string) error
 }
 
@@ -46,24 +46,17 @@ func (p *playerConnection) CreatePlayer(player model.Player) (model.Player, erro
 	return player, nil
 }
 
-func (p *playerConnection) UpdatePlayer(username string) (model.Player, error) {
-	var player model.Player
-	res := p.connection.Take(&player, "username = ?", username)
-	if res != nil {
-		return player, res.Error
-	}
-
+func (p *playerConnection) UpdatePlayer(player model.Player) (model.Player, error) {
 	p.connection.Save(&player)
 	return player, nil
 }
 
 func (p *playerConnection) DeletePlayer(username string) error {
 	var player model.Player
-	res := p.connection.Take(&player, "username = ?", username)
+	res := p.connection.Delete(&player, "username = ?", username)
 	if res != nil {
 		return res.Error
 	}
 
-	p.connection.Delete(&player)
 	return nil
 }

@@ -68,13 +68,33 @@ func (p *playerController) CreatePlayer(ctx *gin.Context) {
 }
 
 func (p *playerController) UpdatePlayer(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Hello UpdatePlayer!",
-	})
+	var playerDto request.PlayerRequestDto
+	username := ctx.Param("username")
+	err := ctx.ShouldBind(&playerDto)
+	if err != nil {
+		res := response.BuildPlayerError(http.StatusBadRequest, err.Error(), "Failed to process request")
+		ctx.JSON(res.Code, res)
+		return
+	}
+
+	result, err := p.playerService.UpdatePlayer(username, playerDto)
+	if err != nil {
+		res := response.BuildPlayerError(http.StatusUnprocessableEntity, err.Error(), "Failed to process request")
+		ctx.JSON(res.Code, res)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, result)
 }
 
 func (p *playerController) DeletePlayer(ctx *gin.Context) {
-	ctx.JSON(http.StatusNoContent, gin.H{
-		"message": "Hello DeletePlayer!",
-	})
+	username := ctx.Param("username")
+	err := p.playerService.DeletePlayer(username)
+	if err != nil {
+		res := response.BuildPlayerError(http.StatusNotFound, err.Error(), "Player not found.")
+		ctx.JSON(res.Code, res)
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, "")
 }

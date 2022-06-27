@@ -10,6 +10,8 @@ type PlayerService interface {
 	CreatePlayer(playerDto request.PlayerRequestDto) (*model.Player, error)
 	GetPlayer(username string) (*model.Player, error)
 	GetAllPlayers() (*[]model.Player, error)
+	UpdatePlayer(username string, playerDto request.PlayerRequestDto) (*model.Player, error)
+	DeletePlayer(username string) error
 }
 
 type playerService struct {
@@ -50,4 +52,29 @@ func (p *playerService) GetAllPlayers() (*[]model.Player, error) {
 		return nil, err
 	}
 	return &players, nil
+}
+
+func (p *playerService) UpdatePlayer(username string, playerDto request.PlayerRequestDto) (*model.Player, error) {
+	player, err := p.playerRepository.GetPlayerByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	player.Name = playerDto.Name
+	player.Username = playerDto.Username
+
+	player, err = p.playerRepository.UpdatePlayer(player)
+	if err != nil {
+		return nil, err
+	}
+
+	return &player, nil
+}
+
+func (p *playerService) DeletePlayer(username string) error {
+	err := p.playerRepository.DeletePlayer(username)
+	if err != nil {
+		return err
+	}
+	return nil
 }
